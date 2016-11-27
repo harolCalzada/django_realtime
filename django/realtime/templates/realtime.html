@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Celery Realtime</title>
+    <script src="https://cdn.socket.io/socket.io-1.4.5.js"></script>
+    <script
+  src="https://code.jquery.com/jquery-3.1.1.min.js"
+  integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
+  crossorigin="anonymous"></script>
+</head>
+<body>
+ <h1>Celery Realtime</h1>
+
+ <form action="" method="post">
+     {%csrf_token%}
+     <input type="submit" value"Exportar CSV">
+
+
+ </form>
+ <div id="result"> </div>
+
+ <script>
+    var socket = io("ws://localhost:3000");
+    socket.on('result', function(csvURL){
+        console.log('entre al on');
+        var result = document.getElementById('result');
+        var aTag = document.createElement('a');
+        aTag.setAttribute('href', csvURL);
+        aTag.setAttribute('target', '_blank');
+        aTag.innerHTML = "Descargar archivo";
+        result.appendChild(aTag);
+
+    });
+
+    var submit = $('input[type="submit"]');
+    submit.on('click', function(event){
+        console.log('click');
+        $.ajax({
+            type: 'POST',
+            url: "{%url 'realtime' %}",
+            data: $('form').serialize(),
+            success: function(celeryTaskId){
+                console.log('success');
+                socket.emit('subscribe', celeryTaskId);
+
+            }
+        });
+        event.preventDefault();
+    });
+
+ </script>
+</body>
+</html>
